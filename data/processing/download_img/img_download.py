@@ -12,7 +12,7 @@ wowwh      range(862942, 1294413)
 feiyi      range(1294413, 1725884)
 '''
 
-USER = 'chenyp'
+USER = 'yuyingli'
 
 
 def filter_url(i):
@@ -34,11 +34,11 @@ def filter_url(i):
 def download_img(df):
     count = 0
     urls = df.image.tolist()
-    for i in range(0, 431471):
+    for i in range(431471,862942):
         if i % 1000 == 0:
             print(i, count) 
             download_df = df.dropna()
-            download_df.to_csv('/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8')
+            download_df.to_csv('/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8', mode = 'a')
         try:
             r = requests.get(urls[i], stream=True)
             if r.status_code == 200:
@@ -49,7 +49,7 @@ def download_img(df):
         except:
             continue
     download_df = df.dropna()
-    download_df.to_csv('/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8')
+    download_df.to_csv('/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8', mode = 'a')
             
     pass
 
