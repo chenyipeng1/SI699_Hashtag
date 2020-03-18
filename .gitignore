@@ -28,6 +28,6 @@ ehthumbs.db
 Thumbs.db
 
 # Directory
-data/
+data/dataset
 aaa/
 model/t2v/*
