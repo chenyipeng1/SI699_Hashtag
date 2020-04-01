@@ -22,6 +22,8 @@ def train():
     cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=30, text_hidden_size = 512, \
             label_vocab_size=label_vocab_size, label_embed_size = 512, label_hidden_size = 512)
     epoch_num = 20
+    optimizer = torch.optim.Adam(cnn_rnn.parameters())
+    criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     for epoch in range(epoch_num):
         print('Epoch {}/{}'.format(epoch+1, epoch_num))
@@ -34,21 +36,20 @@ def train():
             image = batch_data["image"]
             label = batch_data["label"]
             label_lengths = batch_data["label_length"]
-            optimizer = torch.optim.Adam(cnn_rnn.parameters())
             optimizer.zero_grad()
 
             outputs = cnn_rnn.forward(batch_data) # B, T, label_vocab_size
             _, predicts = torch.max(outputs, 2) # B, T
             label_trim = label[:,1:]
 
-            criterion = nn.CrossEntropyLoss(ignore_index=0)
+            
             loss = criterion(outputs.transpose(2,1), label_trim)
             loss.backward()
             optimizer.step()
             
             running_loss += loss.item() * torch.sum(label_lengths-1)
             running_corrects += count_corrects(label_trim, predicts, label_lengths.long()-1)
-            running_size = torch.sum(label_lengths-1)
+            running_size += torch.sum(label_lengths-1)
 
         epoch_loss = running_loss / running_size
         epoch_acc = running_corrects / running_size
