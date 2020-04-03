@@ -23,8 +23,8 @@ class TweetData():
     
     """
     def __init__(self, batch_size, \
-        csv_file="/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/OneMonthFilter001.csv", \
-        root_dir="/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/10033)", \
+        csv_file="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter002.csv", \
+        root_dir="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/10033", \
         data_transform= transforms.Compose([
                 #transforms.ToPILImage(mode="RGB"),
                 transforms.RandomResizedCrop(224),
@@ -37,7 +37,7 @@ class TweetData():
         #if os.path.exists("label2tag")
         assert(sum(split_ratio) == 1)
         self.label_generator = LabelGenerator(csv_file)
-        dataset = TweetDataset(csv_file=csv_file, root_dir="/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/10033", \
+        dataset = TweetDataset(csv_file=csv_file, root_dir=root_dir, \
                                     tag2label=self.label_generator.tag2label, text_vocab=self.label_generator.text_vocab, transform=data_transform)
         train_size = int(len(dataset) * split_ratio[0])
         val_size = int(len(dataset) * split_ratio[1])

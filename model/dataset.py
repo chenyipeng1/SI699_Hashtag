@@ -36,7 +36,7 @@ class LabelGenerator():
         self.text_vocab = TextVocabulary('tweet')
         df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
         # for test usage
-        df = df.iloc[0:1000]
+        df = df.iloc[0:100000]
         print(df.shape[0], " tweets")
         for idx in range(0, df.shape[0]):
             tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")]
@@ -64,7 +64,7 @@ class TweetDataset(Dataset):
     def __init__(self, csv_file, root_dir, tag2label, text_vocab, transform=None, max_text_len=50, max_label_len=10):
         self.df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
         # for test usag
-        self.df = self.df.iloc[0:1000]
+        self.df = self.df.iloc[0:100000]
         self.root_dir = root_dir
         self.transform = transform
         self.tag2label = tag2label

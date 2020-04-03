@@ -14,12 +14,8 @@ class CNN_RNN(nn.Module):
         self.decoder = DecoderRNN(vocab_size=label_vocab_size, embed_size=label_embed_size, \
             hidden_size=label_hidden_size, num_layers=1)
 
-    def forward(self, batch_data):
-        text = batch_data["text"]
-        image = batch_data["image"]
-        label = batch_data["label"]
-        text_length = batch_data["text_length"]
-        label_length = batch_data["label_length"]
+    def forward(self, text, image, label, text_length):
+
         text_features = self.text_encoder(text, text_length)
         #print("text feat: ", text_features.shape)
         image_features = self.image_encoder(image)
