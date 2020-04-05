@@ -21,13 +21,19 @@
 ######################
 .DS_Store
 .DS_Store?
+.vscode/
 ._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
 Thumbs.db
+*.pyc
 
 # Directory
 data/dataset
 aaa/
 model/t2v/*
+model/__pycache__/*
+example/*
+venv/
+

@@ -32,13 +32,13 @@ class TweetData():
                 transforms.ToTensor(),
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ]), \
-        split_ratio=(0.7, 0.1, 0.2)):
+        split_ratio=(0.7, 0.1, 0.2), file_size=None):
         #popular_tags = PopularSetGenerator("small_batch.csv")
         #if os.path.exists("label2tag")
         assert(sum(split_ratio) == 1)
-        self.label_generator = LabelGenerator(csv_file)
-        dataset = TweetDataset(csv_file=csv_file, root_dir=root_dir, \
-                                    tag2label=self.label_generator.tag2label, text_vocab=self.label_generator.text_vocab, transform=data_transform)
+        self.label_generator = LabelGenerator(csv_file, file_size=file_size)
+        dataset = TweetDataset(csv_file=csv_file, root_dir=root_dir, tag2label=self.label_generator.tag2label, \
+                            text_vocab=self.label_generator.text_vocab, transform=data_transform, file_size=file_size)
         train_size = int(len(dataset) * split_ratio[0])
         val_size = int(len(dataset) * split_ratio[1])
         test_size = len(dataset) - train_size - val_size
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     """
     To use dataloader, treat it as an generator
     """
-    tweet_data = TweetData(batch_size=2)
+    tweet_data = TweetData(batch_size=2, file_size=100)
     for batch_data in tweet_data.dataloaders["train"]:
         print(batch_data)
         break

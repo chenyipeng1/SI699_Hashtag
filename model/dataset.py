@@ -28,15 +28,15 @@ class LabelGenerator():
         2. hashtag to frequency
         3. label to hashtag
     """
-    def __init__(self, csv_file, popular_tags=None):
+    def __init__(self, csv_file, popular_tags=None, file_size=None):
         self.tag2label = {"<end>": 0, "<start>": 1}
         self.tag2freq = collections.defaultdict(int)
         self.label2tag = {0: "<end>", "<start>": 1}
         self.label_num = 2
         self.text_vocab = TextVocabulary('tweet')
         df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
-        # for test usage
-        df = df.iloc[0:100000]
+        if file_size:
+            df = df.iloc[0:file_size]
         print(df.shape[0], " tweets")
         for idx in range(0, df.shape[0]):
             tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")]
@@ -61,10 +61,11 @@ class TweetDataset(Dataset):
     Each item is a dictionary
     {"text": text, "image": image, "label": label_list}
     """
-    def __init__(self, csv_file, root_dir, tag2label, text_vocab, transform=None, max_text_len=50, max_label_len=10):
+    def __init__(self, csv_file, root_dir, tag2label, text_vocab, transform=None, max_text_len=50, max_label_len=10, file_size=None):
         self.df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
         # for test usag
-        self.df = self.df.iloc[0:100000]
+        if file_size:
+            self.df = self.df.iloc[0:file_size]
         self.root_dir = root_dir
         self.transform = transform
         self.tag2label = tag2label

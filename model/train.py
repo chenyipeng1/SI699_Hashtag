@@ -17,17 +17,14 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4)
+    tweet_data = TweetData(batch_size=16, file_size=100)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
-    cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=30, text_hidden_size = 512, \
+    cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=512, text_hidden_size = 512, \
             label_vocab_size=label_vocab_size, label_embed_size = 512, label_hidden_size = 512)
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
-    optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=1)
-    print(cnn_rnn.parameters())
-    for i in cnn_rnn.parameters():
-        print(i)
+    optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=0.01)
     criterion = nn.CrossEntropyLoss(ignore_index=0)
 
     for epoch in range(epoch_num):

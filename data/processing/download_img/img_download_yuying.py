@@ -12,7 +12,7 @@ wowwh      range(90w, 130w)
 yuyingli   range(130w, 1725884)
 '''
 
-USER = 'chenyp'
+USER = 'yuyingli'
 
 
 def filter_url(i):
@@ -34,26 +34,21 @@ def filter_url(i):
 def download_img(df):
     count = 0
     urls = df.image.tolist()
-    for i in range(0,100000):
+    for i in range(1617000,1700000):
         if i % 1000 == 0:
             print(i, count) 
             # download_df = df.dropna()
             # download_df.to_csv('/nfs/locker/arcts-cavium-hadoop-stage/home/si699w20_cbudak_JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8', mode = 'a')
 
         folder_num = str(100000 * (1 + (i / 100000))) + '/'
-       
-        try:
-	    r = requests.get(urls[i], stream=True)
-            if r.status_code == 200:
+        r = requests.get(urls[i], stream=True)
+        if r.status_code == 200:
             open('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/10033/'+ folder_num + str(i) + '.jpg', 'wb').write(r.content) 
-            	# urllib.urlretrieve(urls[i], '/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/img/small_batch/'+ str(i) + '.jpg')
-            	# df.iloc[i,3] = folder_num + str(i)+ '.jpg'
+            # urllib.urlretrieve(urls[i], '/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/img/small_batch/'+ str(i) + '.jpg')
+            # df.iloc[i,3] = folder_num + str(i)+ '.jpg'
             count += 1
-        except:
-            continue
-		
-    # download_df = df.dropna()
-    # download_df.to_csv('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8', mode = 'a')
+    download_df = df.dropna()
+    download_df.to_csv('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/' + '10033_' + USER + '.csv', index=False, encoding = 'utf-8', mode = 'a')
             
     pass
 
