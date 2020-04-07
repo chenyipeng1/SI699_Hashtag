@@ -98,6 +98,12 @@ class DecoderRNN(nn.Module):
         #features = torch.cat((image_text_features, torch.zeros(batch_size, text_features.shape[1]), 1) # B, C + text_hidden_size + text_hidden_size
         text_projection = self.linear_text(text_features) # B, hidden_size
         image_projection = self.linear_image(image_features) # B, hidden_size
+
+        #### print projection layer
+        # print(text_projection)
+        # print('*' * 50)
+        # print(image_projection)
+        # print('*' * 50)
         #print("text projection ", text_projection.shape)
         #print("image projection ", image_projection.shape)
         for i in range(time_step): 
@@ -105,6 +111,7 @@ class DecoderRNN(nn.Module):
             hx, cx = self.lstm_cell(embeddings[:,i,:], (hx, cx)) # B, hidden_size
             #print("hx ", hx.shape)
             xt = torch.sum(torch.stack((text_projection, image_projection, hx), dim=0), dim=0)  # B, hidden_size
+            #xt = torch.sum(torch.stack((image_projection, hx), dim=0), dim=0)  # B, hidden_size
             #print("xt ", xt.shape)
             label_embedding = torch.mm(xt, self.embed.weight.transpose(1,0)) # B, vocab_size
             #print("label_embedding ", label_embedding.shape)

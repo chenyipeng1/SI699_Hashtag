@@ -110,6 +110,8 @@ class TweetDataset(Dataset):
 
         # Merge images (from tuple of 3D tensor to 4D tensor).
         images = torch.stack(images, 0)
+        ### generate random data
+        # images = torch.rand(images.shape) - 0.5
         
         # Merge labels (from tuple of 1D tensor to 2D tensor).
         label_lengths = [min(self.max_label_len, len(label)) for label in labels]
@@ -124,6 +126,8 @@ class TweetDataset(Dataset):
             end = text_lengths[i]
             text_stacked[i, :end] = text[:end]
         
+        ### generate random data
+        # text_stacked = torch.zeros(text_stacked.shape).long()
         return {"text": text_stacked, "image": images, "label": label_stacked, \
             "label_length": torch.Tensor(label_lengths), "text_length": torch.Tensor(text_lengths)}
 

@@ -1,9 +1,20 @@
 import pandas as pd
 import json
+import os
 # should also change path in order to run.
 
-with open('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/ImageList.txt', 'r') as filehandle:
-    img_list = json.load(filehandle)
+folder_list = [100000 * i for i in range(1,19)]
+
+filePath = '/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/10033/'
+
+img_list = []
+
+for i in folder_list:
+	path = filePath + str(i)
+	img_list += os.listdir(path)
+	print(len(img_list))
+# with open('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/ImageList.txt', 'r') as filehandle:
+#     img_list = json.load(filehandle)
 dictOfImg = dict.fromkeys(img_list , 1)
 
 with open('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/FreqDict.txt', 'r') as filehandle:
@@ -51,4 +62,4 @@ if __name__ == "__main__":
     print(df.head())
     print(df.tail())
     print(df.shape)
-    df.to_csv('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter002.csv', index=False, encoding = 'utf-8', mode = 'a')
+    df.to_csv('/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter003.csv', index=False, encoding = 'utf-8', mode = 'a')

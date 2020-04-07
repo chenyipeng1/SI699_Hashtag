@@ -51,7 +51,6 @@ class TweetData():
         self.dataloaders = {x: torch.utils.data.DataLoader(self.datasets[x], batch_size=batch_size,
                                                 shuffle=True, num_workers=4, drop_last=True, collate_fn=dataset.collate_fn)
                     for x in ["train", "val", "test"]}
-
     def show_top_frequency(self, k=10):
         print("Top ", k, " hashtags with frequency")
         print(sorted(self.label_generator.tag2freq.items(), key=lambda x: x[1], reverse=True)[:k])    
@@ -63,5 +62,6 @@ if __name__ == "__main__":
     """
     tweet_data = TweetData(batch_size=2, file_size=100)
     for batch_data in tweet_data.dataloaders["train"]:
-        print(batch_data)
+        # print(batch_data)
+        # print(batch_data['text'])
         break
