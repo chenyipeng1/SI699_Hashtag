@@ -78,15 +78,15 @@ class TweetDataset(Dataset):
             idx = idx.tolist()
         text = self.df.loc[idx, "text"]
         img_name = os.path.join(self.root_dir, self.df.loc[idx, "path"])
-        tags = ["<start>"]
-        tags.extend(self.df.loc[idx, "hashtags"][1:-1].split(","))
+        # tags = ["<start>"]
+        tags = self.df.loc[idx, "hashtags"][1:-1].split(",")[0]
         image = io.imread(img_name)
         image = Image.fromarray(image).convert("RGB")
         if self.transform:
             image = self.transform(image)
         text_preprocessed = self.text_vocab.preprocess(text)
-        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags])
-        #return {"text": text, "image": image, "label": torch.tensor([self.tag2label[x.strip()] for x in tags])}
+        #return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags])
+        return {"text": text, "image": image, "label": torch.tensor(self.tag2label[tags])}
         
     
     def collate_fn(self, data):
