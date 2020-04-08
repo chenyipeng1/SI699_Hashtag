@@ -58,7 +58,7 @@ def train():
             optimizer.step()
             
             running_loss += loss.item() * torch.sum(label_lengths-1)
-            running_corrects += count_corrects(label_trim, predicts, label_lengths.long()-1)
+            running_corrects += torch.sum(label_trim == predicts)
             running_size += torch.sum(label_lengths-1)
 
         epoch_loss = running_loss / running_size
