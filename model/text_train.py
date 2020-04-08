@@ -49,6 +49,7 @@ def train():
 
 
             outputs=text_rnn.forward(text,text_lengths)
+            _, predicts = torch.max(outputs, 1) # B, T
             label_trim = label[:,1]
 
 
@@ -57,13 +58,13 @@ def train():
             optimizer.step()
             
             running_loss += loss.item() * torch.sum(label_lengths-1)
-            # running_corrects += count_corrects(label_trim, predicts, label_lengths.long()-1)
+            running_corrects += count_corrects(label_trim, predicts, label_lengths.long()-1)
             running_size += torch.sum(label_lengths-1)
 
         epoch_loss = running_loss / running_size
-        # epoch_acc = running_corrects / running_size
+        epoch_acc = running_corrects / running_size
         phase = "train"
         time_elapsed = time.time() - since
-        print('{} Loss: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, time_elapsed//60, time_elapsed%60))
+        print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
 
 train()
