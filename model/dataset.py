@@ -29,17 +29,18 @@ class LabelGenerator():
         3. label to hashtag
     """
     def __init__(self, csv_file, popular_tags=None, file_size=None):
-        self.tag2label = {"<end>": 0, "<start>": 1}
+        self.tag2label = {} #{"<end>": 0, "<start>": 1}
         self.tag2freq = collections.defaultdict(int)
-        self.label2tag = {0: "<end>", "<start>": 1}
-        self.label_num = 2
+        self.label2tag = {} #{0: "<end>", 1: "<start>"}
+        self.label_num = 0 #2
         self.text_vocab = TextVocabulary('tweet')
         df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
         if file_size:
             df = df.iloc[0:file_size]
         print(df.shape[0], " tweets")
         for idx in range(0, df.shape[0]):
-            tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")]
+            tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")][0]
+            tags = [tags]
             for tag in tags:
                 if popular_tags and tag not in popular_tags:
                     continue

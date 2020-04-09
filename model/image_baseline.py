@@ -10,7 +10,7 @@ from dataloader import TweetData
 from model_attention import EncoderCNN
 
 
-tweet_data = TweetData(batch_size=16, file_size=100000)
+tweet_data = TweetData(batch_size=4, file_size=10000)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
@@ -27,7 +27,7 @@ for epoch in range(epoch_num):
     print('-' * 10)
     running_loss = 0.0
     running_corrects = 0
-    running_size = 0
+    running_size = 0.0
     
     for batch_data in tweet_data.dataloaders["train"]:
         #text = batch_data["text"].to(device)
@@ -36,8 +36,7 @@ for epoch in range(epoch_num):
         optimizer.zero_grad()
 
         outputs = model_ft(image)
-        _, predicts = torch.max(outputs, 1) # B, T
-
+        _, predicts = torch.max(outputs, 1)
         loss = criterion(outputs, label)
         loss.backward()
         optimizer.step()
