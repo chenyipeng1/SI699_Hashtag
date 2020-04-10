@@ -43,11 +43,12 @@ def train():
     
 
     for epoch in range(epoch_num):
-        since = time.time()
+        
         print('Epoch {}/{}'.format(epoch+1, epoch_num))
         print('-' * 10)
         
         for phase in ["train", "val"]:
+            since = time.time()
             if phase == "train":
                 cnn_rnn.train()
             else:
