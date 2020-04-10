@@ -23,7 +23,7 @@ class TweetData():
     
     """
     def __init__(self, batch_size, \
-        csv_file="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter002.csv", \
+        csv_file="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter846.csv", \
         root_dir="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/10033", \
         data_transform= transforms.Compose([
                 #transforms.ToPILImage(mode="RGB"),
@@ -33,8 +33,7 @@ class TweetData():
                 transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
             ]), \
         split_ratio=(0.7, 0.1, 0.2), file_size=None):
-        #popular_tags = PopularSetGenerator("small_batch.csv")
-        #if os.path.exists("label2tag")
+
         assert(sum(split_ratio) == 1)
         self.label_generator = LabelGenerator(csv_file, file_size=file_size)
         dataset = TweetDataset(csv_file=csv_file, root_dir=root_dir, tag2label=self.label_generator.tag2label, \

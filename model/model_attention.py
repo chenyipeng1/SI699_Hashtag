@@ -13,47 +13,58 @@ def to_var(x, volatile=False):
     return Variable(x, volatile=volatile)
 
 class EncoderCNN(nn.Module):
-    def __init__(self):
-        """Load the pretrained ResNet-18 and replace top fully connected layer."""
+    def __init__(self, resnet_version="resnet18", train_resnet=False):
+        """Load the pretrained ResNet and replace top fully connected layer."""
         super(EncoderCNN, self).__init__()
-        resnet18 = models.resnet18(pretrained=True)
-        modules = list(resnet18.children())[:-1]      # delete the last fc layer.
-        self.resnet18 = nn.Sequential(*modules)
+        resnet = None
+        if resnet_version == "resnet18":
+            resnet = models.resnet18(pretrained=True)
+        elif resnet_version == "resnet34":
+            resnet = models.resnet34(pretrained=True)
+        else:
+            resnet = models.resnet50(pretrained=True)
+        self.image_hidden_size = list(resnet.children())[-1].in_features
+        print("Using ", resnet_version, " with output feature size ", self.image_hidden_size)
+        modules = list(resnet.children())[:-1]      # delete the last fc layer.
+        self.resnet = nn.Sequential(*modules)
+        self.train_resnet = train_resnet
+        
         
     def forward(self, images):
         """Extract feature vectors from input images.
             input: images ()
             output: features (N, H*W, C)
         """
-        
-        with torch.no_grad():
-            features = self.resnet18(images)
-        N,C,H,W=features.size()
+        features = None
+        if self.train_resnet:
+            features = self.resnet(images)
+        else:
+            with torch.no_grad():
+                features = self.resnet(images)
+        N, C, H, W = features.size()
         #print('features',features.size())
-        features = features.view(N,C,H*W)
-        features = features.permute(0,2,1)
+        features = features.view(N, C, H * W)
+        features = features.permute(0, 2, 1)
         return features
 
 
+
 class DecoderRNN(nn.Module):
-    def __init__(self, embed_size, hidden_size, vocab_size, num_layers):
+    def __init__(self, image_hidden_size, text_hidden_size, label_hidden_size, vocab_size, num_layers):
         """Set the hyper-parameters and build the layers."""
         '''
         input: 
         vocab_size: dimension of label vectors
-        embed_size: dimension of label embedding vectors
         hidden_size: dimension of lstm hidden states
         num_layers: number of layers in lstm
         '''
         super(DecoderRNN, self).__init__()
-        self.embed = nn.Embedding(vocab_size, embed_size, padding_idx=0)
-        self.lstm_cell = nn.LSTMCell(embed_size, hidden_size)
-        self.linear_text = nn.Linear(hidden_size, hidden_size)    #infeatures:hidden_size, outfeatures:vocab_size
-        self.linear_image = nn.Linear(hidden_size, hidden_size)
-        self.linear_label = nn.Linear(hidden_size, hidden_size)
+        self.embed = nn.Embedding(vocab_size, label_hidden_size, padding_idx=0)
+        self.lstm_cell = nn.LSTMCell(label_hidden_size, label_hidden_size)
+        self.linear_text = nn.Linear(text_hidden_size, label_hidden_size)    #infeatures:hidden_size, outfeatures:vocab_size
+        self.linear_image = nn.Linear(image_hidden_size, label_hidden_size)
 
-        self.embed_size = embed_size
-        self.hidden_size = hidden_size
+        self.label_hidden_size = label_hidden_size
         self.vocab_size = vocab_size
         self.num_layers = num_layers
 
@@ -86,26 +97,19 @@ class DecoderRNN(nn.Module):
         input: extracted text_features (B, text_hidden_size), image features (B, H*W, C), labels (B, T)
         output: predicted label 
         '''
-        embeddings = self.embed(labels[:,:-1]) # B, T, label_embed_size
+        embeddings = self.embed(labels[:,:-1]) # B, T, label_hidden_size
         image_features = torch.mean(image_features, 1) #.unsqueeze(1) # B, C
         #image_text_features = torch.cat((image_features, text_features), 1) # B, C + text_hidden_size
         #print(image_features.shape)
         batch_size, time_step = labels.size()
         time_step -= 1
         predicts = to_var(torch.zeros(batch_size, time_step, self.vocab_size))
-        hx = to_var(torch.zeros(batch_size, self.hidden_size))
-        cx = to_var(torch.zeros(batch_size, self.hidden_size))
+        hx = to_var(torch.zeros(batch_size, self.label_hidden_size))
+        cx = to_var(torch.zeros(batch_size, self.label_hidden_size))
         #features = torch.cat((image_text_features, torch.zeros(batch_size, text_features.shape[1]), 1) # B, C + text_hidden_size + text_hidden_size
         text_projection = self.linear_text(text_features) # B, hidden_size
         image_projection = self.linear_image(image_features) # B, hidden_size
 
-        #### print projection layer
-        # print(text_projection)
-        # print('*' * 50)
-        # print(image_projection)
-        # print('*' * 50)
-        #print("text projection ", text_projection.shape)
-        #print("image projection ", image_projection.shape)
         for i in range(time_step): 
             #feas, _ = self.attention(features,hx)
             hx, cx = self.lstm_cell(embeddings[:,i,:], (hx, cx)) # B, hidden_size
@@ -115,7 +119,7 @@ class DecoderRNN(nn.Module):
             #print("xt ", xt.shape)
             label_embedding = torch.mm(xt, self.embed.weight.transpose(1,0)) # B, vocab_size
             #print("label_embedding ", label_embedding.shape)
-            predicts[:,i,:] = F.softmax(label_embedding, dim=1) #
+            predicts[:,i,:] = label_embedding
         return predicts
     
     def sample(self, features, states=None):
