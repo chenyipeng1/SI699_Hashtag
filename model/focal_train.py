@@ -7,6 +7,8 @@ from torch.nn.utils.rnn import pack_padded_sequence
 import time
 from PIL import ImageFile
 
+from focalloss import FocalLoss
+
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def count_corrects(label, predict, label_lengths):
@@ -30,7 +32,8 @@ def train():
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
     optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=0.001)
-    criterion = nn.CrossEntropyLoss(ignore_index=0)
+#    criterion = nn.CrossEntropyLoss(ignore_index=0)
+    criterion = FocalLoss(gamma=2)
 
     for epoch in range(epoch_num):
         since = time.time()
