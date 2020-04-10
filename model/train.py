@@ -6,7 +6,7 @@ from dataloader import TweetData
 from torch.nn.utils.rnn import pack_padded_sequence
 import time
 from PIL import ImageFile
-
+from focal_loss import FocalLoss
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def count_corrects(label, predict, label_lengths):
@@ -20,17 +20,27 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4, file_size=50000)
+    tweet_data = TweetData(batch_size=4, file_size=100)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
 
     cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 512, \
             label_vocab_size=label_vocab_size, label_hidden_size = 256, resnet_version="resnet18", train_resnet=False)
+    
+    USE_FOCAL_LOSS = False
 
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
     optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=0.001)
-    criterion = nn.CrossEntropyLoss(ignore_index=0)
+
+    criterion = None
+    if USE_FOCAL_LOSS:
+        print("Using Focal Loss")
+        criterion = FocalLoss(gamma=2)
+    else:
+        print("Using Cross Entropy")   
+        criterion = nn.CrossEntropyLoss(ignore_index=0)
+    
 
     for epoch in range(epoch_num):
         since = time.time()
