@@ -19,6 +19,7 @@ class BinaryFocalLoss(nn.Module):
             input = input.transpose(1,2)    # N,C,H*W => N,H*W,C
             input = input.contiguous().view(-1,input.size(2))   # N,H*W,C => N*H*W,C
 
+        target = target * (target != self.ignore_index).long()
         target = target.contiguous().view(-1,1)
 
         logpt = F.log_softmax(input,dim=1)
