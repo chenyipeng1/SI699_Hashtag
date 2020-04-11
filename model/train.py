@@ -20,14 +20,14 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4, file_size=100)
+    tweet_data = TweetData(batch_size=4, file_size=50000)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
 
     cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 512, \
             label_vocab_size=label_vocab_size, label_hidden_size = 256, resnet_version="resnet18", train_resnet=False)
     
-    USE_FOCAL_LOSS = False
+    USE_FOCAL_LOSS = True
 
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
@@ -36,7 +36,7 @@ def train():
     criterion = None
     if USE_FOCAL_LOSS:
         print("Using Focal Loss")
-        criterion = FocalLoss(gamma=2)
+        criterion = FocalLoss(gamma=2,ignore_index=0)
     else:
         print("Using Cross Entropy")   
         criterion = nn.CrossEntropyLoss(ignore_index=0)
