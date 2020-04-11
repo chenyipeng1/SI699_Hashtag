@@ -3,13 +3,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-class FocalLoss(nn.Module):
-    def __init__(self, gamma=0, alpha=None, size_average=True):
-        super(FocalLoss, self).__init__()
+class BinaryFocalLoss(nn.Module):
+    def __init__(self, gamma=0, ignore_index=None, alpha=None, size_average=True):
+        super(BinaryFocalLoss, self).__init__()
         self.gamma = gamma
         self.alpha = alpha
         if isinstance(alpha,(float,int)): self.alpha = torch.Tensor([alpha,1-alpha])
         if isinstance(alpha,list): self.alpha = torch.Tensor(alpha)
+        self.ignore_index = ignore_index
         self.size_average = size_average
 
     def forward(self, input, target):
@@ -17,7 +18,7 @@ class FocalLoss(nn.Module):
             input = input.view(input.size(0),input.size(1),-1)  # N,C,H,W => N,C,H*W
             input = input.transpose(1,2)    # N,C,H*W => N,H*W,C
             input = input.contiguous().view(-1,input.size(2))   # N,H*W,C => N*H*W,C
-#        target = target.view(-1,1)
+
         target = target.contiguous().view(-1,1)
 
         logpt = F.log_softmax(input,dim=1)
