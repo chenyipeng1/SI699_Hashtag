@@ -31,7 +31,7 @@ class LabelGenerator():
     def __init__(self, csv_file, popular_tags=None, file_size=None):
         self.tag2label = {"<end>": 0, "<start>": 1}
         self.tag2freq = collections.defaultdict(int)
-        self.label2tag = {0: "<end>", "<start>": 1}
+        self.label2tag = {0: "<end>", 1: "<start>"}
         self.label_num = 2
         self.text_vocab = TextVocabulary('tweet')
         df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')

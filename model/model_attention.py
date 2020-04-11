@@ -98,7 +98,7 @@ class DecoderRNN(nn.Module):
         output: predicted label 
         '''
         embeddings = self.embed(labels[:,:-1]) # B, T, label_hidden_size
-        image_features = torch.mean(image_features, 1) #.unsqueeze(1) # B, C
+        image_features = torch.mean(image_features, 1) # B, image_hidden_size
         #image_text_features = torch.cat((image_features, text_features), 1) # B, C + text_hidden_size
         #print(image_features.shape)
         batch_size, time_step = labels.size()
@@ -107,36 +107,43 @@ class DecoderRNN(nn.Module):
         hx = to_var(torch.zeros(batch_size, self.label_hidden_size))
         cx = to_var(torch.zeros(batch_size, self.label_hidden_size))
         #features = torch.cat((image_text_features, torch.zeros(batch_size, text_features.shape[1]), 1) # B, C + text_hidden_size + text_hidden_size
-        text_projection = self.linear_text(text_features) # B, hidden_size
-        image_projection = self.linear_image(image_features) # B, hidden_size
+        text_projection = self.linear_text(text_features) # B, label_hidden_size
+        image_projection = self.linear_image(image_features) # B, label_hidden_size
 
         for i in range(time_step): 
             #feas, _ = self.attention(features,hx)
-            hx, cx = self.lstm_cell(embeddings[:,i,:], (hx, cx)) # B, hidden_size
+            hx, cx = self.lstm_cell(embeddings[:,i,:], (hx, cx)) # B, label_hidden_size
             #print("hx ", hx.shape)
-            xt = torch.sum(torch.stack((text_projection, image_projection, hx), dim=0), dim=0)  # B, hidden_size
-            #xt = torch.sum(torch.stack((image_projection, hx), dim=0), dim=0)  # B, hidden_size
+            xt = torch.sum(torch.stack((text_projection, image_projection, hx), dim=0), dim=0)  # B, label_hidden_size
+            #xt = torch.sum(torch.stack((image_projection, hx), dim=0), dim=0)  # B, label_hidden_size
             #print("xt ", xt.shape)
             label_embedding = torch.mm(xt, self.embed.weight.transpose(1,0)) # B, vocab_size
             #print("label_embedding ", label_embedding.shape)
             predicts[:,i,:] = label_embedding
         return predicts
     
-    def sample(self, features, states=None):
+    def sample_greedy(self, text_features, image_features, path_length=10):
         """Generate labels for given image features using greedy search."""
-        sampled_ids = []
-        hx=to_var(torch.zeros(1,1024))
-        cx=to_var(torch.zeros(1,1024))
-        inputs = torch.mean(features,1)
-        alphas=[]
-        for i in range(self.max_seg_length):
-            feas,alpha=self.attention(features,hx)
-            alphas.append(alpha)
-            inputs=torch.cat((feas,inputs),-1)
-            hx, cx = self.lstm_cell(inputs,(hx,cx))          # hiddens: (batch_size, 1, hidden_size)
-            outputs = self.linear(hx.squeeze(1))            # outputs:  (batch_size, vocab_size)
-            _, predicted = outputs.max(1)                        # predicted: (batch_size)
-            sampled_ids.append(predicted)
-            inputs = self.embed(predicted)                       # inputs: (batch_size, embed_size)
-        sampled_ids = torch.stack(sampled_ids, 1)                # sampled_ids: (batch_size, max_seq_length)
-        return sampled_ids,alphas
+        batch_size = text_features.shape[0]
+        time_step = path_length
+
+        predicts = to_var(torch.zeros(batch_size, time_step))
+        hx = to_var(torch.zeros(batch_size, self.label_hidden_size))
+        cx = to_var(torch.zeros(batch_size, self.label_hidden_size))
+
+        image_features = torch.mean(image_features, 1) # B, image_hidden_size
+        text_projection = self.linear_text(text_features) # B, label_hidden_size
+        image_projection = self.linear_image(image_features) # B, label_hidden_size
+
+        label = torch.ones((batch_size)).long() # B     1 as <start>
+        
+
+        for i in range(time_step):
+            embeddings = self.embed(label) # B, label_hidden_size
+            hx, cx = self.lstm_cell(embeddings, (hx, cx)) # B, label_hidden_size
+            xt = torch.sum(torch.stack((text_projection, image_projection, hx), dim=0), dim=0)
+            label_embedding = torch.mm(xt, self.embed.weight.transpose(1,0)) # B, vocab_size
+            _, label= torch.max(label_embedding, dim=1) # B
+            predicts[:,i] = label
+
+        return predicts
