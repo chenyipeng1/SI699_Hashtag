@@ -29,6 +29,8 @@ def train():
     
     USE_FOCAL_LOSS = False
 
+    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/100.pt"
+
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
     optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=0.001)
@@ -85,5 +87,8 @@ def train():
             epoch_acc = running_corrects / running_size
             time_elapsed = time.time() - since
             print('{} Loss:\t{:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
+        
+        if (epoch + 1) % 5 == 0:
+            torch.save(cnn_rnn.state_dict(), MODEL_PATH)
 
 train()
