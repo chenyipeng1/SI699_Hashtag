@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
 
-class BinaryFocalLoss(nn.Module):
+class FocalLoss(nn.Module):
     def __init__(self, gamma=0, ignore_index=None, alpha=None, size_average=True):
-        super(BinaryFocalLoss, self).__init__()
+        super(FocalLoss, self).__init__()
         self.gamma = gamma
         self.alpha = alpha
         if isinstance(alpha,(float,int)): self.alpha = torch.Tensor([alpha,1-alpha])
