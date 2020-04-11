@@ -27,9 +27,9 @@ def train():
     cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 512, \
             label_vocab_size=label_vocab_size, label_hidden_size = 256, resnet_version="resnet18", train_resnet=False)
     
-    USE_FOCAL_LOSS = False
-    SAVE_MODEL = True
-    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/100.pt"
+    USE_FOCAL_LOSS = True
+    SAVE_MODEL = False # save model every 5 epoches
+    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/{}.pt".format(file_size) 
 
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
@@ -38,7 +38,7 @@ def train():
     criterion = None
     if USE_FOCAL_LOSS:
         print("Using Focal Loss")
-        criterion = FocalLoss(gamma=2)
+        criterion = FocalLoss(gamma=2,ignore_index=0)
     else:
         print("Using Cross Entropy")   
         criterion = nn.CrossEntropyLoss(ignore_index=0)

@@ -11,4 +11,4 @@
 #SBATCH --gres=gpu:1
 
 source start.sh
-python model/focal_train.py
+python model/train.py
