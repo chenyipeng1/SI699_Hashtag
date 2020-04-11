@@ -20,7 +20,8 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4, file_size=100)
+    file_size = 100
+    tweet_data = TweetData(batch_size=4, file_size=file_size)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
 
@@ -28,7 +29,7 @@ def train():
             label_vocab_size=label_vocab_size, label_hidden_size = 256, resnet_version="resnet18", train_resnet=False)
     
     USE_FOCAL_LOSS = True
-    SAVE_MODEL = False # save model every 5 epoches
+    SAVE_MODEL = True # save model every 5 epoches
     MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/{}.pt".format(file_size) 
 
     cnn_rnn = cnn_rnn.to(device)
