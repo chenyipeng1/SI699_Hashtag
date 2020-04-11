@@ -18,9 +18,18 @@ class CNN_RNN(nn.Module):
     def forward(self, text, image, label, text_length):
 
         text_features = self.text_encoder(text, text_length)
-        #print("text feat: ", text_features.shape)
+
         image_features = self.image_encoder(image)
-        #print("image feat: ", image_features.shape)
+
         predicts = self.decoder(text_features, image_features, label)
-        #print("predicts: ", predicts.shape)
+
+        return predicts
+    
+    def sample_greedy(self, text, image, text_length, path_length=10):
+        text_features = self.text_encoder(text, text_length)
+
+        image_features = self.image_encoder(image)
+
+        predicts = self.decoder.sample_greedy(text_features, image_features, path_length=path_length)
+
         return predicts

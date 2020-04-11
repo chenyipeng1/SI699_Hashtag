@@ -38,3 +38,5 @@ model/__pycache__/*
 example/*
 venv/
 
+# Model
+*.pt
