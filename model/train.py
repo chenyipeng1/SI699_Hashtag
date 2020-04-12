@@ -20,7 +20,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    file_size = 100
+    file_size = 1000
     tweet_data = TweetData(batch_size=4, file_size=file_size)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
@@ -29,12 +29,13 @@ def train():
             label_vocab_size=label_vocab_size, label_hidden_size = 256, resnet_version="resnet18", train_resnet=False)
     
     USE_FOCAL_LOSS = True
-    SAVE_MODEL = True # save model every 5 epoches
-    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/{}.pt".format(file_size) 
+    SAVE_MODEL = False # save model every 5 epoches
+    MODEL_PATH = "/home/chenyp/SI699_Hashtag/serialized/{}.pt".format(file_size) 
 
     cnn_rnn = cnn_rnn.to(device)
     epoch_num = 20
-    optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(cnn_rnn.parameters(), lr=0.01)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 
     criterion = None
     if USE_FOCAL_LOSS:
@@ -87,7 +88,7 @@ def train():
             epoch_acc = running_corrects / running_size
             time_elapsed = time.time() - since
             print('{} Loss:\t{:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
-        
+        scheduler.step() 
         if SAVE_MODEL and (epoch + 1) % 5 == 0:
             torch.save(cnn_rnn.state_dict(), MODEL_PATH)
 
