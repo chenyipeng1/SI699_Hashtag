@@ -33,3 +33,5 @@ class CNN_RNN(nn.Module):
         predicts = self.decoder.sample_greedy(text_features, image_features, path_length=path_length)
 
         return predicts
+    
+    #def sample_beam_search()

@@ -15,12 +15,12 @@ class FocalLoss(nn.Module):
 
     def forward(self, input, target):
         if input.dim()>2:
-            input = input.view(input.size(0),input.size(1),-1)  # N,C,H,W => N,C,H*W
-            input = input.transpose(1,2)    # N,C,H*W => N,H*W,C
-            input = input.contiguous().view(-1,input.size(2))   # N,H*W,C => N*H*W,C
+            input = input.view(input.size(0),input.size(1),-1)  # B, T, vocab_size
+            input = input.transpose(1,2)    # B, vocab_size, T
+            input = input.contiguous().view(-1,input.size(2))   # B * T, vocab_size 
 
-        target = target * (target != self.ignore_index).long()
-        target = target.contiguous().view(-1,1)
+        target = target.contiguous().view(-1,1) # B * T, vocab_size
+        input = input * (target != self.ignore_index).long()
 
         logpt = F.log_softmax(input,dim=1)
         logpt = logpt.gather(1,target)
