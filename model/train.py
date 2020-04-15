@@ -15,7 +15,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    file_size = 100
+    file_size = 10000
     tweet_data = TweetData(batch_size=4, file_size=file_size)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
@@ -40,10 +40,10 @@ def train():
     criterion = None
     if USE_FOCAL_LOSS:
         print("Using Focal Loss")
-        criterion = FocalLoss(gamma=2, ignore_index=0)
+        criterion = FocalLoss(gamma=2, ignore_index=0, size_average=False)
     else:
         print("Using Cross Entropy")   
-        criterion = nn.CrossEntropyLoss(ignore_index=0)
+        criterion = nn.CrossEntropyLoss(ignore_index=0, reduction="sum")
     
 
     for epoch in range(epoch_num):
@@ -86,7 +86,7 @@ def train():
                 with torch.no_grad():
                     _, predicts = torch.max(outputs, dim=2) # B, T
                     _, predicts_topk = torch.topk(outputs, k=k, dim=2, sorted=False)
-                    running_loss += loss.item() * torch.sum(label_lengths-1)
+                    running_loss += loss.item()
                     running_corrects += prediction_analysis.count_corrects(label_trim, predicts, label_lengths.long()-1)
                     running_corrects_topk += prediction_analysis.count_corrects(label_trim, predicts_topk, label_lengths.long()-1, k=k)
                     running_size += torch.sum(label_lengths-1)
