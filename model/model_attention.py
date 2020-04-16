@@ -68,29 +68,6 @@ class DecoderRNN(nn.Module):
         self.vocab_size = vocab_size
         self.num_layers = num_layers
 
-        self.vis_dim=512
-        self.hidden_dim=1024
-        vis_num=196
-        self.att_vw = nn.Linear(self.vis_dim,self.vis_dim,bias=False)
-        self.att_hw = nn.Linear(self.hidden_dim,self.vis_dim,bias=False)
-        self.att_bias = nn.Parameter(torch.zeros(vis_num))
-        self.att_w = nn.Linear(self.vis_dim,1,bias=False)
-
-    def attention(self,features,hiddens):
-        '''
-        attention of RNN model, changes when predicting different labels
-        each step: the average of the synthesized image of all the label nodes at the softmax layer
-        input: image features ,hiddens: (batch_size, 1, hidden_size)
-        output: sum of all elements based on feature vector row, rescaled att_out
-        '''
-        att_fea = self.att_vw(features)
-        att_h = self.att_hw(hiddens).unsqueeze(1)
-        att_full = nn.ReLU()(att_fea + att_h +self.att_bias.view(1,-1,1))
-        att_out = self.att_w(att_full)
-        alpha=nn.Softmax(dim=1)(att_out)
-        context=torch.sum(features*alpha,1) 
-        return context,alpha
-
     def forward(self, text_features, image_features, labels):
         """Decode image feature vectors and generates labels."""
         '''
@@ -145,5 +122,58 @@ class DecoderRNN(nn.Module):
             label_embedding = torch.mm(xt, self.embed.weight.transpose(1,0)) # B, vocab_size
             _, label= torch.max(label_embedding, dim=1) # B
             predicts[:,i] = label
+
+        return predicts
+
+    def sample_beam_search(self, text_features, image_features, path_length=10, beam_width=5):
+        batch_size = text_features.shape[0]
+        time_step = path_length + 1
+
+        predicts = to_var(torch.zeros(batch_size, time_step, beam_width)) # B, L+1, W
+        hx = to_var(torch.zeros(batch_size * beam_width, self.label_hidden_size)) # B * , hidden_size
+        cx = to_var(torch.zeros(batch_size * beam_width, self.label_hidden_size))
+
+        image_features = torch.mean(image_features, 1) # B, image_hidden_size
+        text_projection = self.linear_text(text_features).unsqueeze(1).expand(-1, beam_width, -1) # B, W, label_hidden_size
+        image_projection = self.linear_image(image_features).unsqueeze(1).expand(-1, beam_width, -1) # B, W, label_hidden_size
+
+        
+        labels_top_L = torch.ones((batch_size, beam_width)).long() # B, W     1 as <start>
+        labels_prev = torch.ones((batch_size, beam_width)).long() # B, W
+        paths_score = torch.zeros((batch_size, beam_width)) # B, W
+
+        for i in range(time_step):
+            embeddings = self.embed(labels_prev).view(batch_size * beam_width, -1) # B * W, label_hidden_size
+            hx, cx = [x.view(batch_size * beam_width, -1) for x in [hx, cx]]
+            hx, cx = self.lstm_cell(embeddings, (hx, cx)) # B * W, label_hidden_size
+            hx, cx = [x.view(batch_size, beam_width, -1) for x in [hx, cx]] # B, W, label_hidden_size
+            xt = torch.sum(torch.stack((text_projection, image_projection, hx), dim=0), dim=0)
+            label_embedding = torch.matmul(xt, self.embed.weight.transpose(1,0)) # B, W, vocab_size
+            
+            # probability sum
+            paths_score = paths_score.unsqueeze(2).expand(-1, -1, beam_width) # B, W, W
+            labels_top_L_squared_value, labels_top_L_squared_indice = torch.topk(label_embedding, k=beam_width, dim=2, sorted=False) # B, W, W
+            paths_score = labels_top_L_squared_value + paths_score
+            
+            # reshape
+            paths_score = paths_score.view(batch_size, -1) # B, W^2
+            labels_top_L_squared_indice = labels_top_L_squared_indice.view(batch_size, -1) # B, W^2
+
+            # selected current labels and path scores
+            paths_score, labels_top_L_indice = torch.topk(paths_score, k=beam_width, dim=1, sorted=True) # B, W
+            labels_top_L = torch.gather(input=labels_top_L_squared_indice, dim=1, index=labels_top_L_indice) # B, W
+
+            # selected previous labels
+            labels_prev = labels_prev.unsqueeze(2).expand(-1, -1, beam_width).reshape(batch_size, -1) # B, W^2
+            labels_prev_selected = torch.gather(input=labels_prev, dim=1, index=labels_top_L_indice) # B, W
+
+            # fix previous labels
+            predicts[:,i,:] = labels_prev_selected
+
+            # new previous labels
+            labels_prev = labels_top_L
+        
+        # remove start label
+        predicts = predicts[:,1:,:] # B, L, W
 
         return predicts

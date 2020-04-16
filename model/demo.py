@@ -17,12 +17,12 @@ def demo():
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
 
-    cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 512, \
-            label_vocab_size=label_vocab_size, label_hidden_size = 256, resnet_version="resnet18", train_resnet=False)
+    cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 128, \
+            label_vocab_size=label_vocab_size, label_hidden_size = 128, resnet_version="resnet18", train_resnet=False)
     
     MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/100.pt"
 
-    cnn_rnn.load_state_dict(torch.load(MODEL_PATH))
+    cnn_rnn.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
     cnn_rnn.eval()
 
     for batch_data in tweet_data.dataloaders["train"]:
@@ -32,12 +32,19 @@ def demo():
         text_length = batch_data["text_length"].to(device)
 
         with torch.no_grad():
-            predicts = cnn_rnn.sample_greedy(text, image, text_length, path_length=3)
+            # Take the most probable predict from beam search
+            predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=10)[:,:,0]
         
         tag_pred = [[label2tag[int(x.item())] for x in predict] for predict in predicts]
-        print("predicts: ", tag_pred)
-        tag_gt = [[label2tag[int(x.item())] for x in l] for l in label]
-        print("truth: ", tag_gt)
+        print("beam_search predicts: \t", tag_pred)
+
+        with torch.no_grad():
+            predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=None)
+        tag_pred = [[label2tag[int(x.item())] for x in predict] for predict in predicts]
+        print("greedy predicts: \t", tag_pred)
+        
+        tag_gt = [[label2tag[int(x.item())] for x in l[1:]] for l in label]
+        print("truth: \t \t \t", tag_gt)
         print()
 
 demo()
