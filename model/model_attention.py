@@ -112,7 +112,7 @@ class DecoderRNN(nn.Module):
         text_projection = self.linear_text(text_features) # B, label_hidden_size
         image_projection = self.linear_image(image_features) # B, label_hidden_size
 
-        label = torch.ones((batch_size)).long() # B     1 as <start>
+        label = to_var(torch.ones((batch_size)).long()) # B     1 as <start>
         
 
         for i in range(time_step):
@@ -138,9 +138,9 @@ class DecoderRNN(nn.Module):
         image_projection = self.linear_image(image_features).unsqueeze(1).expand(-1, beam_width, -1) # B, W, label_hidden_size
 
         
-        labels_top_L = torch.ones((batch_size, beam_width)).long() # B, W     1 as <start>
-        labels_prev = torch.ones((batch_size, beam_width)).long() # B, W
-        paths_score = torch.zeros((batch_size, beam_width)) # B, W
+        labels_top_L = to_var(torch.ones((batch_size, beam_width)).long()) # B, W     1 as <start>
+        labels_prev = to_var(torch.ones((batch_size, beam_width)).long()) # B, W
+        paths_score = to_var(torch.zeros((batch_size, beam_width))) # B, W
 
         for i in range(time_step):
             embeddings = self.embed(labels_prev).view(batch_size * beam_width, -1) # B * W, label_hidden_size
