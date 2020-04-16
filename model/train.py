@@ -52,7 +52,7 @@ def train():
         print('-' * 10)
         
         
-        for phase in ["train", "val"]:
+        for phase in ["train", "val", "test"]:
             since = time.time()
             if phase == "train":
                 cnn_rnn.train()
@@ -69,27 +69,35 @@ def train():
                 text = batch_data["text"].to(device)
                 image = batch_data["image"].to(device)
                 label = batch_data["label"].to(device)
+                label_trim = label[:,1:]
                 label_lengths = batch_data["label_length"].to(device)
                 text_lengths = batch_data["text_length"].to(device)
                 optimizer.zero_grad()
 
-                with torch.set_grad_enabled(phase == 'train'):
-                    outputs = cnn_rnn.forward(text, image, label, text_lengths) # B, T, label_vocab_size
-                    
-                    label_trim = label[:,1:]
-                    loss = criterion(outputs.transpose(2,1), label_trim)
+                if phase in ["train", "val"]:
+                    with torch.set_grad_enabled(phase == 'train'):
+                        outputs = cnn_rnn.forward(text, image, label, text_lengths) # B, T, label_vocab_size
+                        
+                        loss = criterion(outputs.transpose(2,1), label_trim)
 
-                    if phase == "train":
-                        loss.backward()
-                        optimizer.step()
-                
-                with torch.no_grad():
-                    _, predicts = torch.max(outputs, dim=2) # B, T
-                    _, predicts_topk = torch.topk(outputs, k=k, dim=2, sorted=False)
-                    running_loss += loss.item()
-                    running_corrects += prediction_analysis.count_corrects(label_trim, predicts, label_lengths.long()-1)
-                    running_corrects_topk += prediction_analysis.count_corrects(label_trim, predicts_topk, label_lengths.long()-1, k=k)
-                    running_size += torch.sum(label_lengths-1)
+                        if phase == "train":
+                            loss.backward()
+                            optimizer.step()
+                    
+                    with torch.no_grad():
+                        _, predicts = torch.max(outputs, dim=2) # B, T
+                        _, predicts_topk = torch.topk(outputs, k=k, dim=2, sorted=False) # B, T, k
+                        running_loss += loss.item() * torch.sum(label_lengths-1)
+                        running_corrects += prediction_analysis.count_corrects(label_trim, predicts, label_lengths.long()-1)
+                        running_corrects_topk += prediction_analysis.count_corrects(label_trim, predicts_topk, label_lengths.long()-1, k=k)
+                        running_size += torch.sum(label_lengths-1)
+                else:
+                    with torch.no_grad():
+                        predicts_topk = cnn_rnn.sample(text, image, text_lengths, path_length=label_trim.shape[1], beam_width=k) # B, T, k
+                        predicts = predicts_topk[:,:,0] # B, T
+                        running_corrects += prediction_analysis.count_corrects(label_trim, predicts, label_lengths.long()-1)
+                        running_corrects_topk += prediction_analysis.count_corrects(label_trim, predicts_topk, label_lengths.long()-1, k=k)
+                        running_size += torch.sum(label_lengths-1)
 
             epoch_loss = running_loss / running_size
             epoch_acc = running_corrects / running_size

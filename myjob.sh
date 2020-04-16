@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=pytorch_combined_model
+#SBATCH --job-name=feiyi_demo
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4

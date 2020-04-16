@@ -25,13 +25,15 @@ class CNN_RNN(nn.Module):
 
         return predicts
     
-    def sample_greedy(self, text, image, text_length, path_length=10):
+    def sample(self, text, image, text_length, path_length=10, beam_width=5):
         text_features = self.text_encoder(text, text_length)
 
         image_features = self.image_encoder(image)
 
-        predicts = self.decoder.sample_greedy(text_features, image_features, path_length=path_length)
+        if beam_width:
+            predicts = self.decoder.sample_beam_search(text_features, image_features, path_length=path_length, beam_width=beam_width) # B, L, W
+        else:
+            predicts = self.decoder.sample_greedy(text_features, image_features, path_length=path_length) # B, L
 
         return predicts
     
-    #def sample_beam_search()
