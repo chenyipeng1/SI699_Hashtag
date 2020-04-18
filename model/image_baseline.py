@@ -10,7 +10,7 @@ from dataloader import TweetData
 from model_attention import EncoderCNN
 
 
-tweet_data = TweetData(batch_size=4, file_size=100)
+tweet_data = TweetData(batch_size=8, file_size=100)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
@@ -19,6 +19,7 @@ model_ft.fc = nn.Linear(num_ftrs, tweet_data.label_generator.label_num)
 model_ft = model_ft.to(device)
 epoch_num = 20    
 optimizer = torch.optim.Adam(model_ft.parameters(), lr=0.001)
+scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 criterion = nn.CrossEntropyLoss()
 
 for epoch in range(epoch_num):
@@ -52,7 +53,7 @@ for epoch in range(epoch_num):
         time_elapsed = time.time() - since
         print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
 
-
+    scheduler.step()
 
 # criterion = nn.CrossEntropyLoss()
 
