@@ -23,7 +23,7 @@ class TweetData():
     
     """
     def __init__(self, batch_size, \
-        csv_file="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter002.csv", \
+        csv_file="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/OneMonthFilter846.csv", \
         root_dir="/scratch/si699w20_cbudak_class_root/si699w20_cbudak_class/shared_data/JI_team/data/dataset/OneMonthData/Image/10033", \
         data_transform= transforms.Compose([
                 #transforms.ToPILImage(mode="RGB"),
