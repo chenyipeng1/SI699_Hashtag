@@ -10,7 +10,7 @@ from dataloader import TweetData
 from model_attention import EncoderCNN
 
 
-tweet_data = TweetData(batch_size=4, file_size=10000)
+tweet_data = TweetData(batch_size=4, file_size=100)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
@@ -28,28 +28,29 @@ for epoch in range(epoch_num):
     running_loss = 0.0
     running_corrects = 0
     running_size = 0.0
-    
-    for batch_data in tweet_data.dataloaders["train"]:
-        #text = batch_data["text"].to(device)
-        image = batch_data["image"].to(device)
-        label = batch_data["label"].to(device)
-        optimizer.zero_grad()
+    phase = None
 
-        outputs = model_ft(image)
-        _, predicts = torch.max(outputs, 1)
-        loss = criterion(outputs, label)
-        loss.backward()
-        optimizer.step()
-        
-        running_loss += loss.item() * len(label)
-        running_corrects += torch.sum(label == predicts)
-        running_size += len(label)
+    for phase in ["train", "val", "test"]:
+        for batch_data in tweet_data.dataloaders[phase]:
+            #text = batch_data["text"].to(device)
+            image = batch_data["image"].to(device)
+            label = batch_data["label"].to(device)
+            optimizer.zero_grad()
 
-    epoch_loss = running_loss / running_size
-    epoch_acc = running_corrects / running_size
-    phase = "train"
-    time_elapsed = time.time() - since
-    print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
+            outputs = model_ft(image)
+            _, predicts = torch.max(outputs, 1)
+            loss = criterion(outputs, label)
+            loss.backward()
+            optimizer.step()
+            
+            running_loss += loss.item() * len(label)
+            running_corrects += torch.sum(label == predicts)
+            running_size += len(label)
+
+        epoch_loss = running_loss / running_size
+        epoch_acc = running_corrects / running_size
+        time_elapsed = time.time() - since
+        print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
 
 
 
