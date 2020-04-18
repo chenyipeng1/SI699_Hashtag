@@ -29,25 +29,24 @@ class LabelGenerator():
         3. label to hashtag
     """
     def __init__(self, csv_file, popular_tags=None, file_size=None):
-        self.tag2label = {"<end>": 0, "<start>": 1}
+        self.tag2label = {}#{"<end>": 0, "<start>": 1}
         self.tag2freq = collections.defaultdict(int)
-        self.label2tag = {0: "<end>", "<start>": 1}
-        self.label_num = 2
+        self.label2tag = {} #{0: "<end>", "<start>": 1}
+        self.label_num = 0
         self.text_vocab = TextVocabulary('tweet')
         df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
         if file_size:
             df = df.iloc[0:file_size]
         print(df.shape[0], " tweets")
         for idx in range(0, df.shape[0]):
-            tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")]
-            for tag in tags:
-                if popular_tags and tag not in popular_tags:
-                    continue
-                if tag not in self.tag2label:
-                    self.tag2label[tag] = self.label_num
-                    self.label2tag[self.label_num] = tag
-                    self.label_num += 1
-                self.tag2freq[tag] += 1
+            tag = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")][0]
+            if popular_tags and tag not in popular_tags:
+                continue
+            if tag not in self.tag2label:
+                self.tag2label[tag] = self.label_num
+                self.label2tag[self.label_num] = tag
+                self.label_num += 1
+            self.tag2freq[tag] += 1
 
             text = df.loc[idx, "text"]
             text_preprocessed = self.text_vocab.preprocess(text)
@@ -78,14 +77,13 @@ class TweetDataset(Dataset):
             idx = idx.tolist()
         text = self.df.loc[idx, "text"]
         img_name = os.path.join(self.root_dir, self.df.loc[idx, "path"])
-        tags = ["<start>"]
-        tags.extend(self.df.loc[idx, "hashtags"][1:-1].split(","))
+        tag = self.df.loc[idx, "hashtags"][1:-1].split(",")[0]
         image = io.imread(img_name)
         image = Image.fromarray(image).convert("RGB")
         if self.transform:
             image = self.transform(image)
         text_preprocessed = self.text_vocab.preprocess(text)
-        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags])
+        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[tag.strip()]])
         #return {"text": text, "image": image, "label": torch.tensor([self.tag2label[x.strip()] for x in tags])}
         
     

@@ -37,7 +37,8 @@ def train():
         for phase in ["train", "val", "test"]:
 
             for batch_data in tweet_data.dataloaders[phase]:
-                batch_data = batch_data
+                print(batch_data)
+                break
                 text = batch_data["text"].to(device)
                 # image = batch_data["image"].to(device)
                 label = batch_data["label"].to(device)
