@@ -18,7 +18,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=8, file_size=100)
+    tweet_data = TweetData(batch_size=8, file_size=None)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
     text_rnn=EncoderGRU(input_size=text_vocab_size, embed_size=128, hidden_size=128,num_output=label_vocab_size).to(device)
@@ -26,7 +26,7 @@ def train():
     optimizer = torch.optim.Adam(text_rnn.parameters(), lr=0.001)
     criterion = nn.CrossEntropyLoss(ignore_index=0)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
-
+    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/text_basline.pt"
     for epoch in range(epoch_num):
         since = time.time()
         print('Epoch {}/{}'.format(epoch+1, epoch_num))
@@ -71,5 +71,5 @@ def train():
             time_elapsed = time.time() - since
             print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
         scheduler.step()
-
+    torch.save(text_rnn.state_dict(), MODEL_PATH)
 train()
