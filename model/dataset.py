@@ -86,7 +86,7 @@ class TweetDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         text_preprocessed = self.text_vocab.preprocess(text)
-        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags]), torch.tensor(image_url)
+        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags]), img_url
         #return {"text": text, "image": image, "label": torch.tensor([self.tag2label[x.strip()] for x in tags])}
         
     
@@ -111,7 +111,7 @@ class TweetDataset(Dataset):
 
         # Merge images (from tuple of 3D tensor to 4D tensor).
         images = torch.stack(images, 0)
-        image_urls = torch.stack(image_urls, 0)
+        print(image_urls)
         ### generate random data
         # images = torch.rand(images.shape) - 0.5
         
