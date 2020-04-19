@@ -61,6 +61,6 @@ if __name__ == "__main__":
     """
     tweet_data = TweetData(batch_size=2, file_size=100)
     for batch_data in tweet_data.dataloaders["train"]:
-        print(batch_data["image_url"])
+        print(batch_data["text_origin"])
         # print(batch_data['text'])
         break

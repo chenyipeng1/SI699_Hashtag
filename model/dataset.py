@@ -86,7 +86,7 @@ class TweetDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         text_preprocessed = self.text_vocab.preprocess(text)
-        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags]), img_url, text_origin
+        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags]), img_url, text
         #return {"text": text, "image": image, "label": torch.tensor([self.tag2label[x.strip()] for x in tags])}
         
     
