@@ -12,7 +12,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 def demo():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=1, file_size=100)
+    tweet_data = TweetData(batch_size=2, file_size=None)
     label2tag = tweet_data.label_generator.label2tag
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
@@ -31,12 +31,13 @@ def demo():
         label = batch_data["label"].to(device)
         text_length = batch_data["text_length"].to(device)
         image_url = batch_data["image_url"]
+        text_origin = batch_data["text_origin"]
 
         with torch.no_grad():
             # Take the most probable predict from beam search
             predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=5)[:,:,0]
         
-        print("text: ", text)
+        print("text_origin: ", text_origin)
         print("image_url: ", image_url)
 
         tag_pred = [[label2tag[int(x.item())] for x in predict] for predict in predicts]
