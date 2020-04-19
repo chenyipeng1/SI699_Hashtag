@@ -111,7 +111,6 @@ class TweetDataset(Dataset):
 
         # Merge images (from tuple of 3D tensor to 4D tensor).
         images = torch.stack(images, 0)
-        print(image_urls)
         ### generate random data
         # images = torch.rand(images.shape) - 0.5
         

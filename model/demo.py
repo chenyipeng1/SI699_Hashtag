@@ -12,7 +12,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 def demo():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4, file_size=100)
+    tweet_data = TweetData(batch_size=1, file_size=100)
     label2tag = tweet_data.label_generator.label2tag
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
@@ -30,18 +30,22 @@ def demo():
         image = batch_data["image"].to(device)
         label = batch_data["label"].to(device)
         text_length = batch_data["text_length"].to(device)
+        image_url = batch_data["image_url"]
 
         with torch.no_grad():
             # Take the most probable predict from beam search
-            predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=10)[:,:,0]
+            predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=5)[:,:,0]
         
+        print("text: ", text)
+        print("image_url: ", image_url)
+
         tag_pred = [[label2tag[int(x.item())] for x in predict] for predict in predicts]
         print("beam_search predicts: \t", tag_pred)
 
-        with torch.no_grad():
-            predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=None)
-        tag_pred = [[label2tag[int(x.item())] for x in predict] for predict in predicts]
-        print("greedy predicts: \t", tag_pred)
+        # with torch.no_grad():
+        #     predicts = cnn_rnn.sample(text, image, text_length, path_length=5, beam_width=None)
+        # tag_pred = [[label2tag[int(x.item())] for x in predict] for predict in predicts]
+        # print("greedy predicts: \t", tag_pred)
         
         tag_gt = [[label2tag[int(x.item())] for x in l[1:]] for l in label]
         print("truth: \t \t \t", tag_gt)
