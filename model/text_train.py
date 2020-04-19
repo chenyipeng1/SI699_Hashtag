@@ -6,6 +6,8 @@ from text_encoder import EncoderGRU
 from dataloader import TweetData
 from torch.nn.utils.rnn import pack_padded_sequence
 import time
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def count_corrects(label, predict, label_lengths):
     corrects = 0
