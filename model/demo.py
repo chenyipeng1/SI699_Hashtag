@@ -20,7 +20,7 @@ def demo():
     cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 128, \
             label_vocab_size=label_vocab_size, label_hidden_size = 128, resnet_version="resnet18", train_resnet=False)
     
-    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/100.pt"
+    MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/cross.pt"
 
     cnn_rnn.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
     cnn_rnn.eval()

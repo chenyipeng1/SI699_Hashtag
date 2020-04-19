@@ -78,6 +78,7 @@ class TweetDataset(Dataset):
             idx = idx.tolist()
         text = self.df.loc[idx, "text"]
         img_name = os.path.join(self.root_dir, self.df.loc[idx, "path"])
+        img_url = self.df.loc[idx, "image"]
         tags = ["<start>"]
         tags.extend(self.df.loc[idx, "hashtags"][1:-1].split(","))
         image = io.imread(img_name)
@@ -85,7 +86,7 @@ class TweetDataset(Dataset):
         if self.transform:
             image = self.transform(image)
         text_preprocessed = self.text_vocab.preprocess(text)
-        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags])
+        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[x.strip()] for x in tags]), torch.tensor(image_url)
         #return {"text": text, "image": image, "label": torch.tensor([self.tag2label[x.strip()] for x in tags])}
         
     
@@ -106,10 +107,11 @@ class TweetDataset(Dataset):
         # Sort a data list by caption length (descending order).
         
         data.sort(key=lambda x: len(x[2]), reverse=True)
-        texts, images, labels = zip(*data)
+        texts, images, labels, image_urls = zip(*data)
 
         # Merge images (from tuple of 3D tensor to 4D tensor).
         images = torch.stack(images, 0)
+        image_urls = torch.stack(image_urls, 0)
         ### generate random data
         # images = torch.rand(images.shape) - 0.5
         
@@ -129,7 +131,8 @@ class TweetDataset(Dataset):
         ### generate random data
         # text_stacked = torch.zeros(text_stacked.shape).long()
         return {"text": text_stacked, "image": images, "label": label_stacked, \
-            "label_length": torch.Tensor(label_lengths), "text_length": torch.Tensor(text_lengths)}
+            "label_length": torch.Tensor(label_lengths), "text_length": torch.Tensor(text_lengths), \
+            "image_url": image_urls}
 
     def __len__(self):
         return self.df.shape[0]
