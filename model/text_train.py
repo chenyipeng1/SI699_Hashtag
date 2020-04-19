@@ -6,6 +6,8 @@ from text_encoder import EncoderGRU
 from dataloader import TweetData
 from torch.nn.utils.rnn import pack_padded_sequence
 import time
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def count_corrects(label, predict, label_lengths):
     corrects = 0
@@ -18,7 +20,7 @@ def train():
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4, file_size=1000)
+    tweet_data = TweetData(batch_size=4, file_size=100)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
     text_rnn=EncoderGRU(input_size=text_vocab_size, embed_size=512, hidden_size=512,num_output=label_vocab_size).to(device)
