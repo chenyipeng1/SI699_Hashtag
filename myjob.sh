@@ -11,4 +11,4 @@
 #SBATCH --gres=gpu:1
 
 source start.sh
-python model/train.py
+python model/image_baseline.py

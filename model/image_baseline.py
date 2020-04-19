@@ -10,7 +10,7 @@ from dataloader import TweetData
 from model_attention import EncoderCNN
 
 
-tweet_data = TweetData(batch_size=8, file_size=100)
+tweet_data = TweetData(batch_size=8, file_size=None)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
@@ -21,6 +21,7 @@ epoch_num = 20
 optimizer = torch.optim.Adam(model_ft.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 criterion = nn.CrossEntropyLoss()
+MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/img_baseline.pt"
 
 for epoch in range(epoch_num):
     since = time.time()
@@ -54,7 +55,7 @@ for epoch in range(epoch_num):
         print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
 
     scheduler.step()
-
+torch.save(model_ft.state_dict(), MODEL_PATH)
 # criterion = nn.CrossEntropyLoss()
 
 # # Observe that all parameters are being optimized
