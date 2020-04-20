@@ -9,4 +9,4 @@
 #SBATCH --account=si699w20_cbudak_class
 
 source start.sh
-python model/train.py
+python model/demo.py
