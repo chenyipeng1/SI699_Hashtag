@@ -11,7 +11,7 @@ from model_attention import EncoderCNN
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-tweet_data = TweetData(batch_size=8, file_size=None)
+tweet_data = TweetData(batch_size=8, file_size=100)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
