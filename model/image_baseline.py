@@ -11,7 +11,7 @@ from model_attention import EncoderCNN
 from PIL import ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
-tweet_data = TweetData(batch_size=8, file_size=100)
+tweet_data = TweetData(batch_size=8, file_size=None)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
@@ -44,8 +44,6 @@ for epoch in range(epoch_num):
             outputs = model_ft(image) # B, C
             index_nonzero = label.nonzero()
             predicts = (outputs[(index_nonzero[:,0], index_nonzero[:,1])] > 0.5).long()
-            print(sum(label))
-            print(predicts)
             loss = criterion(outputs, label)
             loss.backward()
             optimizer.step()
