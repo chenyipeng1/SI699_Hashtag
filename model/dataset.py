@@ -86,9 +86,6 @@ class TweetDataset(Dataset):
         index_of_one = torch.tensor([self.tag2label[x.strip()] for x in tags])
         label = torch.zeros(len(self.tag2label)).long()
         label[index_of_one] = 1
-        print(index_of_one)
-        print(label)
-        print(sum(label))
         text_preprocessed = self.text_vocab.preprocess(text)
         return self.text_vocab.tensorFromSentence(text_preprocessed), image, label
         
