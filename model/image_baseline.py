@@ -41,10 +41,11 @@ for epoch in range(epoch_num):
             label = batch_data["label"].to(device)
             optimizer.zero_grad()
 
-            outputs = model_ft(image)
-            _, predicts = torch.max(outputs, 1)
+            outputs = model_ft(image) # B, C
+            _, predicts = (outputs > 0.5).long()
+            print(label)
+            print(predicts)
             loss = criterion(outputs, label)
-            print(loss)
             loss.backward()
             optimizer.step()
             running_loss += loss.item() * len(label)
