@@ -42,15 +42,16 @@ for epoch in range(epoch_num):
             optimizer.zero_grad()
 
             outputs = model_ft(image) # B, C
-            _, predicts = (outputs > 0.5).long()
-            print(label)
+            index_nonzero = label.nonzero()
+            predicts = (outputs[(index_nonzero[:,0], index_nonzero[:,1])] > 0.5).long()
+            print(sum(label))
             print(predicts)
             loss = criterion(outputs, label)
             loss.backward()
             optimizer.step()
-            running_loss += loss.item() * len(label)
-            running_corrects += torch.sum(label == predicts)
-            running_size += len(label)
+            running_loss += loss.item() * index_nonzero.shape[0]
+            running_corrects += torch.sum(predicts)
+            running_size += index_nonzero.shape[0]
 
         epoch_loss = running_loss / running_size
         epoch_acc = running_corrects / running_size
