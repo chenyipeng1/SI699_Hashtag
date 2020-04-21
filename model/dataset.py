@@ -39,8 +39,7 @@ class LabelGenerator():
             df = df.iloc[0:file_size]
         print(df.shape[0], " tweets")
         for idx in range(0, df.shape[0]):
-            tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")][0]
-            tags = [tags]
+            tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")]
             for tag in tags:
                 if popular_tags and tag not in popular_tags:
                     continue
