@@ -15,6 +15,8 @@ tweet_data = TweetData(batch_size=8, file_size=None)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("Using ", device)
 model_ft = models.resnet18(pretrained=True)
+for param in model_ft.parameters():
+    param.requires_grad = False
 num_ftrs = model_ft.fc.in_features
 model_ft.fc = nn.Linear(num_ftrs, tweet_data.label_generator.label_num)
 model_ft = model_ft.to(device)
@@ -42,18 +44,16 @@ for epoch in range(epoch_num):
             label = batch_data["label"].to(device)
             optimizer.zero_grad()
 
-            t1 = time.time()
-            outputs = model_ft(image) # B, C
-            t2 = time.time()
-            index_nonzero = label.nonzero()
-            predicts = (outputs[(index_nonzero[:,0], index_nonzero[:,1])] > 0.5).long()
-            t3 = time.time()
-            loss = criterion(outputs, label)
-            t4 = time.time()
-            loss.backward()
-            optimizer.step()
-            t5 = time.time()
-            print([t2-t1, t3-t2, t4-t3, t5-t4])
+            with torch.set_grad_enabled(phase == "train"):
+                outputs = model_ft(image) # B, C
+                index_nonzero = label.nonzero()
+                predicts = (outputs[(index_nonzero[:,0], index_nonzero[:,1])] > 0.5).long()
+                loss = criterion(outputs, label)
+                
+                if phase == "train":
+                    loss.backward()
+                    optimizer.step()
+
             running_loss += loss.item() * index_nonzero.shape[0]
             running_corrects += torch.sum(predicts)
             running_size += index_nonzero.shape[0]
