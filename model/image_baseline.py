@@ -26,7 +26,7 @@ criterion = nn.BCEWithLogitsLoss()
 MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/img_baseline.pt"
 
 for epoch in range(epoch_num):
-    since = time.time()
+    
     print('Epoch {}/{}'.format(epoch+1, epoch_num))
     print('-' * 10)
     running_loss = 0.0
@@ -35,18 +35,25 @@ for epoch in range(epoch_num):
     phase = None
 
     for phase in ["train", "val", "test"]:
+        since = time.time()
         for batch_data in tweet_data.dataloaders[phase]:
             #text = batch_data["text"].to(device)
             image = batch_data["image"].to(device)
             label = batch_data["label"].to(device)
             optimizer.zero_grad()
 
+            t1 = time.time()
             outputs = model_ft(image) # B, C
+            t2 = time.time()
             index_nonzero = label.nonzero()
             predicts = (outputs[(index_nonzero[:,0], index_nonzero[:,1])] > 0.5).long()
+            t3 = time.time()
             loss = criterion(outputs, label)
+            t4 = time.time()
             loss.backward()
             optimizer.step()
+            t5 = time.time()
+            print([t2-t1, t3-t2, t4-t3, t5-t4])
             running_loss += loss.item() * index_nonzero.shape[0]
             running_corrects += torch.sum(predicts)
             running_size += index_nonzero.shape[0]
