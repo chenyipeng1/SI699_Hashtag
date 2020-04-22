@@ -29,9 +29,9 @@ class LabelGenerator():
         3. label to hashtag
     """
     def __init__(self, csv_file, popular_tags=None, file_size=None):
-        self.tag2label = {}#{"<end>": 0, "<start>": 1}
+        self.tag2label = {} #{"<end>": 0, "<start>": 1}
         self.tag2freq = collections.defaultdict(int)
-        self.label2tag = {} #{0: "<end>", "<start>": 1}
+        self.label2tag = {} # {0: "<end>", 1: "<start>"}
         self.label_num = 0
         self.text_vocab = TextVocabulary('tweet')
         df = pd.read_csv(csv_file, lineterminator='\n', quotechar='"')
@@ -39,14 +39,15 @@ class LabelGenerator():
             df = df.iloc[0:file_size]
         print(df.shape[0], " tweets")
         for idx in range(0, df.shape[0]):
-            tag = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")][0]
-            if popular_tags and tag not in popular_tags:
-                continue
-            if tag not in self.tag2label:
-                self.tag2label[tag] = self.label_num
-                self.label2tag[self.label_num] = tag
-                self.label_num += 1
-            self.tag2freq[tag] += 1
+            tags = [x.strip() for x in df.loc[idx, "hashtags"][1:-1].split(",")]
+            for tag in tags:
+                if popular_tags and tag not in popular_tags:
+                    continue
+                if tag not in self.tag2label:
+                    self.tag2label[tag] = self.label_num
+                    self.label2tag[self.label_num] = tag
+                    self.label_num += 1
+                self.tag2freq[tag] += 1
 
             text = df.loc[idx, "text"]
             text_preprocessed = self.text_vocab.preprocess(text)
@@ -77,14 +78,16 @@ class TweetDataset(Dataset):
             idx = idx.tolist()
         text = self.df.loc[idx, "text"]
         img_name = os.path.join(self.root_dir, self.df.loc[idx, "path"])
-        tag = self.df.loc[idx, "hashtags"][1:-1].split(",")[0]
+        tags = self.df.loc[idx, "hashtags"][1:-1].split(",")
         image = io.imread(img_name)
         image = Image.fromarray(image).convert("RGB")
         if self.transform:
             image = self.transform(image)
+        index_of_one = torch.tensor([self.tag2label[x.strip()] for x in tags])
+        label = torch.zeros(len(self.tag2label))
+        label[index_of_one] = 1
         text_preprocessed = self.text_vocab.preprocess(text)
-        return self.text_vocab.tensorFromSentence(text_preprocessed), image, torch.tensor([self.tag2label[tag.strip()]])
-        #return {"text": text, "image": image, "label": torch.tensor([self.tag2label[x.strip()] for x in tags])}
+        return self.text_vocab.tensorFromSentence(text_preprocessed), image, label
         
     
     def collate_fn(self, data):
@@ -108,15 +111,16 @@ class TweetDataset(Dataset):
 
         # Merge images (from tuple of 3D tensor to 4D tensor).
         images = torch.stack(images, 0)
+        labels = torch.stack(labels, 0)
         ### generate random data
         # images = torch.rand(images.shape) - 0.5
         
         # Merge labels (from tuple of 1D tensor to 2D tensor).
-        label_lengths = [min(self.max_label_len, len(label)) for label in labels]
-        label_stacked = torch.zeros(len(labels), max(label_lengths)).long()
-        for i, label in enumerate(labels):
-            end = label_lengths[i]
-            label_stacked[i, :end] = label[:end]
+        # label_lengths = [min(self.max_label_len, len(label)) for label in labels]
+        # label_stacked = torch.zeros(len(labels), max(label_lengths)).long()
+        # for i, label in enumerate(labels):
+        #     end = label_lengths[i]
+        #     label_stacked[i, :end] = label[:end]
 
         text_lengths = [min(self.max_text_len, len(text)) for text in texts]
         text_stacked = torch.zeros(len(texts), max(text_lengths)).long()
@@ -126,8 +130,9 @@ class TweetDataset(Dataset):
         
         ### generate random data
         # text_stacked = torch.zeros(text_stacked.shape).long()
-        return {"text": text_stacked, "image": images, "label": label_stacked, \
-            "label_length": torch.Tensor(label_lengths), "text_length": torch.Tensor(text_lengths)}
+        return {"text": text_stacked, "image": images, "label": labels, "text_length": torch.Tensor(text_lengths)}
+        # return {"text": text_stacked, "image": images, "label": label_stacked, \
+        #     "label_length": torch.Tensor(label_lengths), "text_length": torch.Tensor(text_lengths)}
 
     def __len__(self):
         return self.df.shape[0]

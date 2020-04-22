@@ -26,7 +26,8 @@ def train():
     text_rnn=EncoderGRU(input_size=text_vocab_size, embed_size=128, hidden_size=128,num_output=label_vocab_size).to(device)
     epoch_num = 20
     optimizer = torch.optim.Adam(text_rnn.parameters(), lr=0.001)
-    criterion = nn.CrossEntropyLoss(ignore_index=0)
+    #criterion = nn.CrossEntropyLoss(ignore_index=0)
+    criterion = nn.BCEWithLogitsLoss()
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/text_basline.pt"
     for epoch in range(epoch_num):
@@ -45,27 +46,25 @@ def train():
                 text = batch_data["text"].to(device)
                 # image = batch_data["image"].to(device)
                 label = batch_data["label"].to(device)
-                label_lengths = batch_data["label_length"].to(device)
+                #label_lengths = batch_data["label_length"].to(device)
                 text_lengths = batch_data["text_length"].to(device)
                 optimizer.zero_grad()
 
                 # outputs = cnn_rnn.forward(text, image, label, text_lengths) # B, T, label_vocab_size
                 # _, predicts = torch.max(outputs, 2) # B, T
                 # label_trim = label[:,1:]
-
-
-                outputs=text_rnn.forward(text,text_lengths)
-                _, predicts = torch.max(outputs, 1) # B, T
-                label_trim = label[:,0]
-
-
-                loss = criterion(outputs, label_trim)
-                loss.backward()
-                optimizer.step()
+                with torch.set_grad_enabled(phase == "train"):
+                    outputs=text_rnn.forward(text,text_lengths)
+                    index_nonzero = label.nonzero()
+                    predicts = (outputs[(index_nonzero[:,0], index_nonzero[:,1])] > 0.5).long()
+                    loss = criterion(outputs, label)
+                    if phase == "train":
+                        loss.backward()
+                        optimizer.step()
                 
-                running_loss += loss.item() * label_trim.shape[0]
-                running_corrects += torch.sum(label_trim == predicts)
-                running_size += label_trim.shape[0]
+                running_loss += loss.item() * index_nonzero.shape[0]
+                running_corrects += torch.sum(predicts)
+                running_size += index_nonzero.shape[0]
 
             epoch_loss = running_loss / running_size
             epoch_acc = running_corrects / running_size
