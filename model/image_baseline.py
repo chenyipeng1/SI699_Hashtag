@@ -68,7 +68,7 @@ for epoch in range(epoch_num):
         print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
 
     scheduler.step()
-torch.save(model_ft.state_dict(), MODEL_PATH)
+    torch.save(model_ft.state_dict(), MODEL_PATH)
 # criterion = nn.CrossEntropyLoss()
 
 # # Observe that all parameters are being optimized
