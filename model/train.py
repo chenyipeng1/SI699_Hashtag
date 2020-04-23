@@ -12,7 +12,6 @@ from prediction_analysis import PredictionAnalysis
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def train():
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
     file_size = 100

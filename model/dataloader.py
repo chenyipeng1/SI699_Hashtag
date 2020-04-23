@@ -54,7 +54,7 @@ class TweetData():
         print("Top ", k, " hashtags with frequency")
         print(sorted(self.label_generator.tag2freq.items(), key=lambda x: x[1], reverse=True)[:k])    
 
-
+torch.manual_seed(0)
 if __name__ == "__main__":
     """
     To use dataloader, treat it as an generator
