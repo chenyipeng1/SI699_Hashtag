@@ -59,7 +59,8 @@ if __name__ == "__main__":
     """
     To use dataloader, treat it as an generator
     """
-    tweet_data = TweetData(batch_size=2, file_size=100)
+    torch.manual_seed(0)
+    tweet_data = TweetData(batch_size=4, file_size=100)
     for batch_data in tweet_data.dataloaders["train"]:
         print(batch_data)
         # print(batch_data['text'])
