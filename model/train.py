@@ -21,7 +21,7 @@ def train():
     label_vocab_size = tweet_data.label_generator.label_num
     for batch_data in tweet_data.dataloaders["train"]:
         print(batch_data["text_length"])
-        print("Above should be 11 12 8 8")
+        print("Above should be 11., 12., 12.,  8.,  6.,  7.,  9.,  7.")
         break
     for batch_data in tweet_data.dataloaders["train"]:
         print(batch_data["text_length"])
