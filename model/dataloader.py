@@ -36,6 +36,7 @@ class TweetData():
         #popular_tags = PopularSetGenerator("small_batch.csv")
         #if os.path.exists("label2tag")
         assert(sum(split_ratio) == 1)
+        torch.manual_seed(0)
         self.label_generator = LabelGenerator(csv_file, file_size=file_size)
         dataset = TweetDataset(csv_file=csv_file, root_dir=root_dir, tag2label=self.label_generator.tag2label, \
                             text_vocab=self.label_generator.text_vocab, transform=data_transform, file_size=file_size)
