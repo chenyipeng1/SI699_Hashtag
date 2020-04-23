@@ -34,7 +34,6 @@ def train():
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/text_basline.pt"
     for epoch in range(epoch_num):
-        since = time.time()
         print('Epoch {}/{}'.format(epoch+1, epoch_num))
         print('-' * 10)
         running_loss = 0.0
@@ -42,7 +41,7 @@ def train():
         running_size = 0.0
 
         for phase in ["train", "val", "test"]:
-
+            since = time.time()
             for batch_data in tweet_data.dataloaders[phase]:
                 #print(batch_data)
                 #break
@@ -75,5 +74,8 @@ def train():
             time_elapsed = time.time() - since
             print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
         scheduler.step()
-    torch.save(text_rnn.state_dict(), MODEL_PATH)
+        since = time.time()
+        torch.save(text_rnn.state_dict(), MODEL_PATH)
+        time_elapsed = time.time() - since
+        print("save model in {:.0f}", time_elapsed)
 train()
