@@ -74,8 +74,5 @@ def train():
             time_elapsed = time.time() - since
             print('{} Loss: {:.4f} Acc: {:.4f} in {:.0f}m {:.0f}s'.format(phase, epoch_loss, epoch_acc, time_elapsed//60, time_elapsed%60))
         scheduler.step()
-        since = time.time()
         torch.save(text_rnn.state_dict(), MODEL_PATH)
-        time_elapsed = time.time() - since
-        print("save model in {:.0f}", time_elapsed)
 train()
