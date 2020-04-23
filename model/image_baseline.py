@@ -26,6 +26,9 @@ scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
 criterion = nn.BCEWithLogitsLoss()
 #criterion = nn.CrossEntropyLoss()
 MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/img_baseline.pt"
+for batch_data in tweet_data.dataloaders["train"]:
+    print(batch_data["text_length"])
+    break
 
 for epoch in range(epoch_num):
     
