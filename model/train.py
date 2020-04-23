@@ -15,12 +15,16 @@ def train():
     torch.manual_seed(0)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    file_size = 100
-    tweet_data = TweetData(batch_size=4, file_size=100)
+    file_size = None
+    tweet_data = TweetData(batch_size=8, file_size=file_size)
     text_vocab_size = tweet_data.label_generator.text_vocab.n_words
     label_vocab_size = tweet_data.label_generator.label_num
     for batch_data in tweet_data.dataloaders["train"]:
-        print(batch_data)
+        print(batch_data["text_length"])
+        print("Above should be 11 12 8 8")
+        break
+    for batch_data in tweet_data.dataloaders["train"]:
+        print(batch_data["text_length"])
         break
     cnn_rnn = CNN_RNN(text_vocab_size=text_vocab_size, text_embed_size=128, text_hidden_size = 128, \
             label_vocab_size=label_vocab_size, label_hidden_size = 128, resnet_version="resnet18", train_resnet=False)
