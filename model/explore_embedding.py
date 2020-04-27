@@ -12,7 +12,7 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 def explore():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using ", device)
-    tweet_data = TweetData(batch_size=4, file_size=100)
+    tweet_data = TweetData(batch_size=8, file_size=None)
     for batch_data in tweet_data.dataloaders["train"]:
         print("Seed fixed")
         print("For whole 847-data with batch_size 8")
@@ -30,3 +30,5 @@ def explore():
     cnn_rnn.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
 
     print(cnn_rnn.decoder.embed.weight.shape)
+
+explore()
