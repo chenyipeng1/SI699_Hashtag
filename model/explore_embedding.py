@@ -30,6 +30,7 @@ def explore():
     cnn_rnn.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
 
     weight = cnn_rnn.decoder.embed.weight
+    weight = weight / weight.norm(dim=1).unsqueeze(0).view(-1,1)
     k = 10
 
     for i in range(847):
