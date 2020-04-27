@@ -29,6 +29,13 @@ def explore():
     MODEL_PATH = "/home/feiyi/SI699_Hashtag/serialized/cross.pt"
     cnn_rnn.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device("cpu")))
 
-    print(cnn_rnn.decoder.embed.weight.shape)
+    weight = cnn_rnn.decoder.embed.weight
+    k = 10
+
+    i = 0
+    distance = torch.mv(weight, weight[i])
+    topk_labels = torch.topk(distance, k)[1]
+    res = [label2tag[label] for label in topk_labels]
+    print(res)
 
 explore()
