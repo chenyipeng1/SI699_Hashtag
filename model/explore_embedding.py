@@ -32,10 +32,12 @@ def explore():
     weight = cnn_rnn.decoder.embed.weight
     k = 10
 
-    i = 0
-    distance = torch.mv(weight, weight[i])
-    topk_labels = torch.topk(distance, k)[1]
-    res = [label2tag[label] for label in topk_labels]
-    print(res)
+    for i in range(10):
+        distance = torch.mv(weight, weight[i])
+        topk_labels = torch.topk(distance, k)[1]
+        res = [label2tag[label.item()] for label in topk_labels]
+        print("label2tag[i] Top 10 similar Tags: ")
+        print(res)
+        print()
 
 explore()
